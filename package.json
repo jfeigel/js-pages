@@ -1,7 +1,7 @@
 {
   "name": "js-pages",
   "version": "0.0.1",
-  "description": "Custom Git script to compile JSDocs/ngdocs and deploy to gh-pages",
+  "description": "Custom Git script to compile JSDoc / ngdoc and deploy to gh-pages",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -12,8 +12,8 @@
     "url": "git+https://github.com/jfeigel/js-pages.git"
   },
   "keywords": [
-    "JSDocs",
-    "ngdocs",
+    "JSDoc",
+    "ngdoc",
     "git",
     "gh-pages"
   ],
@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/jfeigel/js-pages#readme",
   "dependencies": {
+    "chalk": "^1.1.1",
     "co": "^4.6.0",
     "inquirer": "^0.11.2"
   },
