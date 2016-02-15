@@ -24,9 +24,13 @@
   },
   "homepage": "https://github.com/jfeigel/js-pages#readme",
   "dependencies": {
+    "bluebird": "^3.3.1",
     "chalk": "^1.1.1",
-    "co": "^4.6.0",
     "inquirer": "^0.11.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-gh-pages": "^1.0.0",
+    "grunt-jsdoc": "^1.1.0"
+  }
 }
