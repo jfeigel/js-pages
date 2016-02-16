@@ -2,17 +2,20 @@ module.exports = function (grunt) {
 
   grunt.initConfig({
     'gh-pages': {
-      options: {
-        base: 'docs'
-      },
-      src: ['**']
+      'js-pages': {
+        src: ['**'],
+        options: {
+          base: 'docs'
+        }
+      }
     },
 
     jsdoc: {
       dist: {
         src: ['app.js'],
         options: {
-          destination: 'docs'
+          destination: 'docs',
+          configure: 'jsdoc-conf.json'
         }
       }
     },

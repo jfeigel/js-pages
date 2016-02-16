@@ -1,6 +1,6 @@
 /**
  * @overview
- * @author James Feigel @jfeigel
+ * @author James Feigel {@link https://github.com/jfeigel|@jfeigel}
  * @description
  *  Custom Git script to compile JSDoc / ngdoc and deploy to gh-pages
  *
