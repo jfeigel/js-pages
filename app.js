@@ -1,10 +1,22 @@
+/**
+ * @overview
+ * @author James Feigel @jfeigel
+ * @description
+ *  Custom Git script to compile JSDoc / ngdoc and deploy to gh-pages
+ *
+ * @requires {@link https://github.com/petkaantonov/bluebird|bluebird}
+ * @requires {@link https://github.com/chalk/chalk|chalk}
+ * @requires {@link https://github.com/SBoudrias/Inquirer.js|Inquirer}
+ */
+
 "use strict";
 
-const inquirer = require("inquirer");
 const Promise  = require("bluebird");
+const chalk    = require("chalk");
+const inquirer = require("inquirer");
+
 const execSync = require("child_process").execSync;
 const fs       = require("fs");
-const chalk    = require("chalk");
 
 const seperatorLine = "==============================";
 const seperator     = `\n${seperatorLine}\n`
@@ -65,7 +77,17 @@ inquirer.prompt([
       }
     ]
   }
-], (answers) => {
+], init);
+
+/**
+ * @function
+ * @name init
+ * @description
+ *  Start setup after questions have been answered
+ *
+ * @param {Object} answers - Answer values from the setup questions
+ */
+function init(answers) {
   console.log(seperator);
   console.log(chalk.gray(`Setting up selected task runner: ${chalk.reset(answers.runner)}`));
 
@@ -98,32 +120,52 @@ inquirer.prompt([
   configureGitAlias(answers.runner, answers.docs, 'gh-pages').then((value) => {
     
   });
-});
+}
 
-// Check if the given package is installed
-function checkInstall(packageToInstall, isGlobal) {
+/**
+ * @function
+ * @name checkInstall
+ * @description
+ *  Check whether or not the given package is installed
+ *
+ * @param {String} packageToCheck - Name of the package to check
+ * @param {boolean} isGlobal - Is the package supposed to be installed globally?
+ *
+ * @returns {boolean} Whether or not the package is installed
+ */
+function checkInstall(packageToCheck, isGlobal) {
   let command = 'npm list';
 
   if (isGlobal === true) {
     command = `${command} -g`;
   }
 
-  command = `${command} --depth 0 ${packageToInstall} ${squelch}`
+  command = `${command} --depth 0 ${packageToCheck} ${squelch}`
 
   try {
     execSync(command);
     
-    console.log(chalk.green(`${packageToInstall} is installed.`));
+    console.log(chalk.green(`${packageToCheck} is installed.`));
     
     return true;
   } catch (err) {
-    console.log(chalk.yellow(`${packageToInstall} is not installed.`));
+    console.log(chalk.yellow(`${packageToCheck} is not installed.`));
     
     return false;
   }
 }
 
-// Install the given package
+/**
+ * @function
+ * @name installPackage
+ * @description
+ *  Install the given package
+ * 
+ * @param {String} packageToInstall - Name of the package to install
+ * @param {boolean} isGlobal - Should the package be installed globally?
+ * @param {boolean} isSudo - Should the package be installed using `sudo`?
+ * @param {String} doSave - Should the package be saved in `package.json`? ['save', 'save-dev']
+ */
 function installPackage(packageToInstall, isGlobal, isSudo, doSave) {
   let command = 'npm install';
 
@@ -147,7 +189,14 @@ function installPackage(packageToInstall, isGlobal, isSudo, doSave) {
   return true;
 }
 
-// Configure grunt as the task-runner
+/**
+ * @function
+ * @name grunt
+ * @description
+ *  Configure grunt as the task-runner
+ *
+ * @param {Object} answers - Answer values from the setup questions
+ */
 function grunt(answers) {
   console.log(chalk.gray("Verifying 'grunt-cli' is installed globally..."));
   
@@ -168,7 +217,14 @@ function grunt(answers) {
   }
 }
 
-// Configure gulp as the task-runner
+/**
+ * @function
+ * @name gulp
+ * @description
+ *  Configure gulp as the task-runner
+ *
+ * @param {Object} answers - Answer values from the setup questions
+ */
 function gulp(answers) {
   console.log(chalk.gray("Verifying 'gulp' is installed locally..."));
 
@@ -180,7 +236,19 @@ function gulp(answers) {
   }
 }
 
-// Configure the custom git script
+/**
+ * @function
+ * @name configureGitAlias
+ * @description
+ *  Configure the custom git script
+ *
+ * @param {String} runner - Selected task-runner
+ * @param {String} docs - Selected documentation generator
+ * @param {String} ghpages - Selected gh-pages script
+ *
+ * @returns {Promise} Promise object that is resolved after Inquirer
+ *                    and custom script creation completes
+ */
 function configureGitAlias(runner, docs, ghpages) {
   return new Promise((resolve, reject) => {
     // Ask the user the name the custom git script
