@@ -164,7 +164,7 @@ function checkInstall(packageToCheck, isGlobal) {
  * @param {String} packageToInstall - Name of the package to install
  * @param {boolean} isGlobal - Should the package be installed globally?
  * @param {boolean} isSudo - Should the package be installed using `sudo`?
- * @param {String} doSave - Should the package be saved in `package.json`? ['save', 'save-dev']
+ * @param {String} doSave - Should the package be saved in `package.json`? ```['save', 'save-dev']```
  */
 function installPackage(packageToInstall, isGlobal, isSudo, doSave) {
   let command = 'npm install';
