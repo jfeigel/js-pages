@@ -250,6 +250,15 @@ function gulp(answers) {
  *                    and custom script creation completes
  */
 function configureGitAlias(runner, docs, ghpages) {
+  try {
+    console.log(chalk.gray('Verifying git has been initialized...'));
+    execSync(`git status ${squelch}`);
+  } catch (e) {
+    console.log(chalk.yellow('Git has not been initialized'));
+    console.log(chalk.gray('Initializing git...'));
+    execSync(`git init ${squelch}`);
+  }
+
   return new Promise((resolve, reject) => {
     let overwriteAliasCommand = null;
     // Ask the user the name the custom git script
