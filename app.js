@@ -251,6 +251,7 @@ function gulp(answers) {
  */
 function configureGitAlias(runner, docs, ghpages) {
   return new Promise((resolve, reject) => {
+    let overwriteAliasCommand = null;
     // Ask the user the name the custom git script
     inquirer.prompt([
         {
@@ -261,7 +262,19 @@ function configureGitAlias(runner, docs, ghpages) {
           "validate": function(value) {
             var pass = value.match(/^[A-Z]{1}([A-Z0-9-]+)?$/i);
             if (pass) {
-              return true;
+              try {
+                execSync(`git config -l --local | grep 'alias.${value}'`);
+
+                if (overwriteAliasCommand === null || overwriteAliasCommand !== value) {
+                  overwriteAliasCommand = value;
+                  return "Alias already exists. Enter the same alias again to overwrite the current alias.";
+                } else {
+                  execSync(`git config --local --unset-all alias.${answers.command_name}`);
+                  return true;
+                }
+              } catch (err) {
+                return true;
+              }
             } else {
               return "Please enter a valid command name";
             }
@@ -269,12 +282,11 @@ function configureGitAlias(runner, docs, ghpages) {
         }
       ], (answers) => {
       // Create the custom git script
-      let gitFilePath = `/usr/local/bin/git-${answers.command_name}`;
+      let gitFilePath = `./git-${answers.command_name}`;
       let stream = fs.createWriteStream(gitFilePath);
       
       stream.once('open', function(fd) {
         stream.write("#!/bin/sh\n\n");
-        stream.write("shift")
         stream.write("git push \"$@\"\n");
         stream.write(`test $? -eq 0 && ${runner} ${docs} && ${runner} ${ghpages}`)
         stream.end();
@@ -282,6 +294,7 @@ function configureGitAlias(runner, docs, ghpages) {
 
       // Make the script executable
       fs.chmodSync(gitFilePath, "0755");
+      execSync(`git config --local --add alias.${answers.command_name} '!sh -c "./git-${answers.command_name}"'`);
       resolve();
     });
   });
