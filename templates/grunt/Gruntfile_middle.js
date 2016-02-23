@@ -1,0 +1,2 @@
+  grunt.initConfig(gruntConfig);
+

@@ -18,6 +18,8 @@ const inquirer = require("inquirer");
 const execSync = require("child_process").execSync;
 const fs       = require("fs");
 
+const config   = require("./config")();
+
 const seperatorLine = "==============================";
 const seperator     = `\n${seperatorLine}\n`
 
@@ -27,8 +29,14 @@ let packageJSONExists = null;
 
 // Object to easily access the runner setup functions
 let runnerSetup = {
-  "grunt": grunt,
-  "gulp": gulp
+  "grunt": {
+    "install": installGrunt,
+    "configure": configureGrunt
+  },
+  "gulp": {
+    "install": installGulp,
+    "configure": configureGulp
+  }
 };
 
 console.log(`\n${seperatorLine}`);
@@ -58,7 +66,7 @@ inquirer.prompt([
     "type": "list",
     "name": "docs",
     "message": "Which documentation generator will you use?",
-    "choices": ["ngdoc", "JSDoc"]
+    "choices": ["ngdoc", "jsdoc"]
   },
   {
     "type": "list",
@@ -112,15 +120,17 @@ function init(answers) {
   }
 
   // Initialize the selected task runner
-  runnerSetup[answers.runner]();
+  runnerSetup[answers.runner].install();
 
   // Configure the custom git script
   //   This function returns a promise since it asks another question
   //   which happens asynchronously
   configureGitAlias(answers.runner, answers.docs, 'gh-pages').then((value) => {
-    
+    runnerSetup[answers.runner].configure(answers.runner, answers.docs, 'gh-pages');
   });
 }
+
+////////////
 
 /**
  * @function
@@ -191,13 +201,13 @@ function installPackage(packageToInstall, isGlobal, isSudo, doSave) {
 
 /**
  * @function
- * @name grunt
+ * @name installGrunt
  * @description
- *  Configure grunt as the task-runner
+ *  Install grunt as the task-runner
  *
  * @param {Object} answers - Answer values from the setup questions
  */
-function grunt(answers) {
+function installGrunt(answers) {
   console.log(chalk.gray("Verifying 'grunt-cli' is installed globally..."));
   
   // Ensure grunt-cli is installed globally
@@ -219,13 +229,73 @@ function grunt(answers) {
 
 /**
  * @function
- * @name gulp
+ * @name configureGrunt
  * @description
- *  Configure gulp as the task-runner
+ *  Configure grunt templates
+ *
+ * @param {String} runner - Selected task-runner
+ * @param {String} docs - Selected documentation generator
+ * @param {String} ghpages - Selected gh-pages script
+ */
+function configureGrunt(runner, docs, ghpages) {
+  console.log(chalk.gray("Compiling the grunt template file..."));
+
+  let templateFilePath = '"node_modules/js-pages/templates/grunt';
+  let configFiles = [
+    `${templateFilePath}/Gruntfile_header.js"`,
+    `${templateFilePath}/Gruntfile_${ghpages}.js"`,
+    `${templateFilePath}/Gruntfile_${docs}.js"`,
+    `${templateFilePath}/Gruntfile_middle.js"`,
+    `${templateFilePath}/Gruntfile_${ghpages}_npm.js"`,
+    `${templateFilePath}/Gruntfile_${docs}_npm.js"`,
+    `${templateFilePath}/Gruntfile_footer.js"`
+  ];
+  let gruntfileName = 'Gruntfile.js';
+
+  let gruntfileExists = fs.readdirSync('./').some((file, index, array) => {
+    return file.match(/^gruntfile\.js$/i);
+  });
+
+  if (gruntfileExists === true) {
+    console.log(chalk.yellow("Gruntfile already exists. Creating a temporary file instead..."));
+    gruntfileName = `${gruntfileName}.tmp`;
+  }
+
+  execSync(`cat ${configFiles.join(' ')} > ${gruntfileName}`);
+}
+
+/**
+ * @function
+ * @name configureGulp
+ * @description
+ *  Configure gulp templates
+ *
+ * @param {String} runner - Selected task-runner
+ * @param {String} docs - Selected documentation generator
+ * @param {String} ghpages - Selected gh-pages script
+ */
+function configureGulp(runner, docs, ghpages) {
+  let templateFilePath = '"templates/gulp"';
+  let configFiles = [
+    `${templateFilePath}/gulpfile_header.js`,
+    `${templateFilePath}/gulpfile_${ghpages}.js`,
+    `${templateFilePath}/gulpfile_${docs}.js`,
+    `${templateFilePath}/gulpfile_footer.js`
+  ];
+
+  execSync(`cat ${configFiles.join(' ')} > gulpfile.tmp.js`);
+  fs.renameSync('gulpfile.tmp.js', './gulpfile.js');
+}
+
+/**
+ * @function
+ * @name installGulp
+ * @description
+ *  Install gulp as the task-runner
  *
  * @param {Object} answers - Answer values from the setup questions
  */
-function gulp(answers) {
+function installGulp(answers) {
   console.log(chalk.gray("Verifying 'gulp' is installed locally..."));
 
   // Ensure gulp is installed locally

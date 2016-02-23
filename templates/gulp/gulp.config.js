@@ -1,6 +1,8 @@
 "use strict";
 
 export function () {
+	let config = {};
+	
     const ngdocs = {
 	    // Destination of the compiles docs
 	    //   Also make sure to include this in your .gitignore
@@ -36,9 +38,7 @@ export function () {
 	    }
 	};
 
-	let config = {
-		ngdocs: ngdocs
-	};
+	config.ngdocs = ngdocs;
 
 	return config;
 }
