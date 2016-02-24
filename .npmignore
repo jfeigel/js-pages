@@ -1,0 +1,9 @@
+.grunt
+docs
+node_modules
+.eslintrc
+.gitignore
+.npmignore
+Gruntfile.js
+jsdoc-conf.json
+package.json
