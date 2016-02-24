@@ -1,11 +1,11 @@
 {
   "name": "js-pages",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Custom Git script to compile JSDoc / ngdoc and deploy to gh-pages",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "test": "npm test"
+    "postinstall": "node app.js"
   },
   "repository": {
     "type": "git",
