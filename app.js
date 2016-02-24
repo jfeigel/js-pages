@@ -145,14 +145,17 @@ function init(answers) {
     execSync(`npm init --force ${squelch}`);
   }
 
+  // Install documentation packages
+  configureDocumentation(answers);
+
   // Initialize the selected task runner
   runnerSetup[answers.runner].install(answers);
-
-  // Configure the custom git script
-  configureGitAlias(answers, 'gh-pages');
   
   // Compile the runner's template files
-  runnerSetup[answers.runner].configure(answers.docs, 'gh-pages');
+  runnerSetup[answers.runner].configure(answers.docs, config['gh-pages'].name);
+
+  // Configure the custom git script
+  configureGitAlias(answers, config['gh-pages'].name);
 }
 
 ////////////
@@ -226,6 +229,34 @@ function installPackage(packageToInstall, isGlobal, isSudo, doSave) {
 
 /**
  * @function
+ * @name configureDocumentation
+ * @description
+ *  Configure the documentation packages and gh-pages
+ *
+ * @param {Object} answers - Answer values from the setup questions
+ */
+function configureDocumentation(answers) {
+  let docPackage = config.dependencies[answers.runner][answers.docs];
+  let ghpagesPackage = config.dependencies[answers.runner]['gh-pages'];
+
+  console.log(chalk.gray(`Installing ${docPackage}...`));
+  installPackage(docPackage, false, answers.sudo, 'save-dev');
+
+  console.log(chalk.gray(`Installing ${ghpagesPackage}...`));
+  installPackage(ghpagesPackage, false, answers.sudo, 'save-dev');
+
+  if (answers.docs === 'jsdoc') {
+    let jsdocConfFile = `${config.path.templates}/${[answers.runner]}/${config.jsdoc.conf}`;
+
+    execSync(`cp ${jsdocConfFile} ./`);
+  }
+
+  // Create empty `docs` folder
+  execSync('mkdir docs');
+}
+
+/**
+ * @function
  * @name installGrunt
  * @description
  *  Install grunt as the task-runner
@@ -233,23 +264,11 @@ function installPackage(packageToInstall, isGlobal, isSudo, doSave) {
  * @param {Object} answers - Answer values from the setup questions
  */
 function installGrunt(answers) {
-  console.log(chalk.gray("Verifying 'grunt-cli' is installed globally..."));
-  
-  // Ensure grunt-cli is installed globally
-  if (checkInstall('grunt-cli', true) === false) {
-    console.log(chalk.gray("Installing 'grunt-cli' globally..."));
-    
-    installPackage('grunt-cli', true, answers.sudo);
-  }
+  console.log(chalk.gray("Installing 'grunt-cli' globally..."));
+  installPackage('grunt-cli', true, answers.sudo);
 
-  console.log(chalk.gray("Verifying 'grunt' is installed locally..."));
-
-  // Ensure grunt is installed locally
-  if (checkInstall('grunt', false) === false) {
-    console.log(chalk.gray("Installing 'grunt' locally..."));
-    
-    installPackage('grunt', false, answers.sudo, 'save-dev');
-  }
+  console.log(chalk.gray("Installing 'grunt' locally..."));
+  installPackage('grunt', false, answers.sudo, 'save-dev');
 }
 
 /**
@@ -265,17 +284,17 @@ function installGrunt(answers) {
 function configureGrunt(docs, ghpages) {
   console.log(chalk.gray("Compiling the grunt template file..."));
 
-  let templateFilePath = '"node_modules/js-pages/templates/grunt';
+  let templateFilePath = `${config.path.templates}/grunt`;
   
   let gruntfileName = 'Gruntfile.js';
   let gruntfileFiles = [
-    `${templateFilePath}/Gruntfile_header.js"`,
-    `${templateFilePath}/Gruntfile_${ghpages}.js"`,
-    `${templateFilePath}/Gruntfile_${docs}.js"`,
-    `${templateFilePath}/Gruntfile_middle.js"`,
-    `${templateFilePath}/Gruntfile_${ghpages}_npm.js"`,
-    `${templateFilePath}/Gruntfile_${docs}_npm.js"`,
-    `${templateFilePath}/Gruntfile_footer.js"`
+    `"${templateFilePath}/Gruntfile_header.js"`,
+    `"${templateFilePath}/Gruntfile_${ghpages}.js"`,
+    `"${templateFilePath}/Gruntfile_${docs}.js"`,
+    `"${templateFilePath}/Gruntfile_middle.js"`,
+    `"${templateFilePath}/Gruntfile_${ghpages}_npm.js"`,
+    `"${templateFilePath}/Gruntfile_${docs}_npm.js"`,
+    `"${templateFilePath}/Gruntfile_footer.js"`
   ];
 
   let gruntfileExists = fs.readdirSync('./').some((file, index, array) => {
@@ -299,14 +318,8 @@ function configureGrunt(docs, ghpages) {
  * @param {Object} answers - Answer values from the setup questions
  */
 function installGulp(answers) {
-  console.log(chalk.gray("Verifying 'gulp' is installed locally..."));
-
-  // Ensure gulp is installed locally
-  if (checkInstall('gulp', false) === false) {
-    console.log(chalk.gray("Installing 'gulp'..."));
-    
-    installPackage('gulp', false, answers.sudo, 'save-dev');
-  }
+  console.log(chalk.gray("Installing 'gulp'..."));
+  installPackage('gulp', false, answers.sudo, 'save-dev');
 }
 
 /**
@@ -322,15 +335,15 @@ function installGulp(answers) {
 function configureGulp(docs, ghpages) {
   console.log(chalk.gray("Compiling the gulp template files..."));
 
-  let templateFilePath = '"node_modules/js-pages/templates/gulp';
+  let templateFilePath = `${config.path.templates}/gulp`;
   
   // gulp.config.js set up
   let gulpconfigName = 'gulp.config.js';
   let gulpconfigFiles = [
-    `${templateFilePath}/gulp.config_header.js"`,
-    `${templateFilePath}/gulp.config_${ghpages}.js"`,
-    `${templateFilePath}/gulp.config_${docs}.js"`,
-    `${templateFilePath}/gulp.config_footer.js"`
+    `"${templateFilePath}/gulp.config_header.js"`,
+    `"${templateFilePath}/gulp.config_${ghpages}.js"`,
+    `"${templateFilePath}/gulp.config_${docs}.js"`,
+    `"${templateFilePath}/gulp.config_footer.js"`
   ];
 
   let gulpconfigExists = fs.readdirSync('./').some((file, index, array) => {
@@ -347,10 +360,10 @@ function configureGulp(docs, ghpages) {
   // gulpfile.js set up
   let gulpfileName = 'gulpfile.js';
   let gulpfileFiles = [
-    `${templateFilePath}/gulpfile_header.js"`,
-    `${templateFilePath}/gulpfile_${ghpages}.js"`,
-    `${templateFilePath}/gulpfile_${docs}.js"`,
-    `${templateFilePath}/gulpfile_footer.js"`
+    `"${templateFilePath}/gulpfile_header.js"`,
+    `"${templateFilePath}/gulpfile_${ghpages}.js"`,
+    `"${templateFilePath}/gulpfile_${docs}.js"`,
+    `"${templateFilePath}/gulpfile_footer.js"`
   ];
 
   let gulpfileExists = fs.readdirSync('./').some((file, index, array) => {
