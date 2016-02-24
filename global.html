@@ -224,7 +224,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="app.js.html">app.js</a>, <a href="app.js.html#line125">line 125</a>
+        <a href="app.js.html">app.js</a>, <a href="app.js.html#line163">line 163</a>
     </li></ul></dd>
     
 
@@ -269,6 +269,137 @@
 </dl>
 
     
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="configureDocumentation"><span class="type-signature"></span>configureDocumentation<span class="signature">(answers)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Configure the documentation packages and gh-pages</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>answers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Answer values from the setup questions</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="app.js.html">app.js</a>, <a href="app.js.html#line230">line 230</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -423,7 +554,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="app.js.html">app.js</a>, <a href="app.js.html#line239">line 239</a>
+        <a href="app.js.html">app.js</a>, <a href="app.js.html#line381">line 381</a>
     </li></ul></dd>
     
 
@@ -477,14 +608,14 @@
 
     
 
-    <h4 class="name" id="grunt"><span class="type-signature"></span>grunt<span class="signature">(answers)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="configureGrunt"><span class="type-signature"></span>configureGrunt<span class="signature">(runner, docs, ghpages)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Configure grunt as the task-runner</p>
+    <p>Configure grunt templates</p>
 </div>
 
 
@@ -520,13 +651,13 @@
 
         <tr>
             
-                <td class="name"><code>answers</code></td>
+                <td class="name"><code>runner</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">String</span>
 
 
             
@@ -536,7 +667,53 @@
 
             
 
-            <td class="description last"><p>Answer values from the setup questions</p></td>
+            <td class="description last"><p>Selected task-runner</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>docs</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Selected documentation generator</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ghpages</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Selected gh-pages script</p></td>
         </tr>
 
     
@@ -577,7 +754,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="app.js.html">app.js</a>, <a href="app.js.html#line192">line 192</a>
+        <a href="app.js.html">app.js</a>, <a href="app.js.html#line274">line 274</a>
     </li></ul></dd>
     
 
@@ -608,14 +785,14 @@
 
     
 
-    <h4 class="name" id="gulp"><span class="type-signature"></span>gulp<span class="signature">(answers)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="configureGulp"><span class="type-signature"></span>configureGulp<span class="signature">(runner, docs, ghpages)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Configure gulp as the task-runner</p>
+    <p>Configure gulp templates</p>
 </div>
 
 
@@ -651,13 +828,13 @@
 
         <tr>
             
-                <td class="name"><code>answers</code></td>
+                <td class="name"><code>runner</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">String</span>
 
 
             
@@ -667,7 +844,53 @@
 
             
 
-            <td class="description last"><p>Answer values from the setup questions</p></td>
+            <td class="description last"><p>Selected task-runner</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>docs</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Selected documentation generator</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ghpages</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Selected gh-pages script</p></td>
         </tr>
 
     
@@ -708,7 +931,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="app.js.html">app.js</a>, <a href="app.js.html#line220">line 220</a>
+        <a href="app.js.html">app.js</a>, <a href="app.js.html#line325">line 325</a>
     </li></ul></dd>
     
 
@@ -839,7 +1062,269 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="app.js.html">app.js</a>, <a href="app.js.html#line82">line 82</a>
+        <a href="app.js.html">app.js</a>, <a href="app.js.html#line116">line 116</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="installGrunt"><span class="type-signature"></span>installGrunt<span class="signature">(answers)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Install grunt as the task-runner</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>answers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Answer values from the setup questions</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="app.js.html">app.js</a>, <a href="app.js.html#line258">line 258</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="installGulp"><span class="type-signature"></span>installGulp<span class="signature">(answers)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Install gulp as the task-runner</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>answers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Answer values from the setup questions</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="app.js.html">app.js</a>, <a href="app.js.html#line312">line 312</a>
     </li></ul></dd>
     
 
@@ -1039,7 +1524,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="app.js.html">app.js</a>, <a href="app.js.html#line158">line 158</a>
+        <a href="app.js.html">app.js</a>, <a href="app.js.html#line196">line 196</a>
     </li></ul></dd>
     
 
@@ -1081,13 +1566,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#checkInstall">checkInstall</a></li><li><a href="global.html#configureGitAlias">configureGitAlias</a></li><li><a href="global.html#grunt">grunt</a></li><li><a href="global.html#gulp">gulp</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#installPackage">installPackage</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#checkInstall">checkInstall</a></li><li><a href="global.html#configureDocumentation">configureDocumentation</a></li><li><a href="global.html#configureGitAlias">configureGitAlias</a></li><li><a href="global.html#configureGrunt">configureGrunt</a></li><li><a href="global.html#configureGulp">configureGulp</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#installGrunt">installGrunt</a></li><li><a href="global.html#installGulp">installGulp</a></li><li><a href="global.html#installPackage">installPackage</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Feb 16 2016 07:29:14 GMT-0600 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Feb 24 2016 08:48:22 GMT-0600 (CST)
 </footer>
 
 <script> prettyPrint(); </script>

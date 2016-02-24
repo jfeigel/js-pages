@@ -46,6 +46,8 @@ const inquirer = require("inquirer");
 const execSync = require("child_process").execSync;
 const fs       = require("fs");
 
+const config   = require("./config")();
+
 const seperatorLine = "==============================";
 const seperator     = `\n${seperatorLine}\n`
 
@@ -55,8 +57,14 @@ let packageJSONExists = null;
 
 // Object to easily access the runner setup functions
 let runnerSetup = {
-  "grunt": grunt,
-  "gulp": gulp
+  "grunt": {
+    "install": installGrunt,
+    "configure": configureGrunt
+  },
+  "gulp": {
+    "install": installGulp,
+    "configure": configureGulp
+  }
 };
 
 console.log(`\n${seperatorLine}`);
@@ -86,7 +94,33 @@ inquirer.prompt([
     "type": "list",
     "name": "docs",
     "message": "Which documentation generator will you use?",
-    "choices": ["ngdoc", "JSDoc"]
+    "choices": ["ngdocs", "jsdoc"]
+  },
+  {
+    "type": "input",
+    "name": "command_name",
+    "message": "Name of custom Git command",
+    "default": "pushdoc",
+    "validate": function(value) {
+      var pass = value.match(/^[A-Z]{1}([A-Z0-9-]+)?$/i);
+      if (pass) {
+        try {
+          execSync(`git config -l --local | grep 'alias.${value}'`);
+
+          if (overwriteAliasCommand === null || overwriteAliasCommand !== value) {
+            overwriteAliasCommand = value;
+            return "Alias already exists. Enter the same alias again to overwrite the current alias.";
+          } else {
+            execSync(`git config --local --unset-all alias.${answers.command_name}`);
+            return true;
+          }
+        } catch (err) {
+          return true;
+        }
+      } else {
+        return "Please enter a valid command name";
+      }
+    }
   },
   {
     "type": "list",
@@ -139,16 +173,20 @@ function init(answers) {
     execSync(`npm init --force ${squelch}`);
   }
 
+  // Install documentation packages
+  configureDocumentation(answers);
+
   // Initialize the selected task runner
-  runnerSetup[answers.runner]();
+  runnerSetup[answers.runner].install(answers);
+  
+  // Compile the runner's template files
+  runnerSetup[answers.runner].configure(answers.docs, config['gh-pages'].name);
 
   // Configure the custom git script
-  //   This function returns a promise since it asks another question
-  //   which happens asynchronously
-  configureGitAlias(answers.runner, answers.docs, 'gh-pages').then((value) => {
-    
-  });
+  configureGitAlias(answers, config['gh-pages'].name);
 }
+
+////////////
 
 /**
  * @function
@@ -219,49 +257,153 @@ function installPackage(packageToInstall, isGlobal, isSudo, doSave) {
 
 /**
  * @function
- * @name grunt
+ * @name configureDocumentation
  * @description
- *  Configure grunt as the task-runner
+ *  Configure the documentation packages and gh-pages
  *
  * @param {Object} answers - Answer values from the setup questions
  */
-function grunt(answers) {
-  console.log(chalk.gray("Verifying 'grunt-cli' is installed globally..."));
-  
-  // Ensure grunt-cli is installed globally
-  if (checkInstall('grunt-cli', true) === false) {
-    console.log(chalk.gray("Installing 'grunt-cli' globally..."));
-    
-    installPackage('grunt-cli', true, answers.sudo);
+function configureDocumentation(answers) {
+  let docPackage = config.dependencies[answers.runner][answers.docs];
+  let ghpagesPackage = config.dependencies[answers.runner]['gh-pages'];
+
+  console.log(chalk.gray(`Installing ${docPackage}...`));
+  installPackage(docPackage, false, answers.sudo, 'save-dev');
+
+  console.log(chalk.gray(`Installing ${ghpagesPackage}...`));
+  installPackage(ghpagesPackage, false, answers.sudo, 'save-dev');
+
+  if (answers.docs === 'jsdoc') {
+    let jsdocConfFile = `${config.path.templates}/${[answers.runner]}/${config.jsdoc.conf}`;
+
+    execSync(`cp ${jsdocConfFile} ./`);
   }
 
-  console.log(chalk.gray("Verifying 'grunt' is installed locally..."));
-
-  // Ensure grunt is installed locally
-  if (checkInstall('grunt', false) === false) {
-    console.log(chalk.gray("Installing 'grunt' locally..."));
-    
-    installPackage('grunt', false, answers.sudo, 'save-dev');
-  }
+  // Create empty `docs` folder
+  execSync('mkdir docs');
 }
 
 /**
  * @function
- * @name gulp
+ * @name installGrunt
  * @description
- *  Configure gulp as the task-runner
+ *  Install grunt as the task-runner
  *
  * @param {Object} answers - Answer values from the setup questions
  */
-function gulp(answers) {
-  console.log(chalk.gray("Verifying 'gulp' is installed locally..."));
+function installGrunt(answers) {
+  console.log(chalk.gray("Installing 'grunt-cli' globally..."));
+  installPackage('grunt-cli', true, answers.sudo);
 
-  // Ensure gulp is installed locally
-  if (checkInstall('gulp', false) === false) {
-    console.log(chalk.gray("Installing 'gulp'..."));
-    
-    installPackage('gulp', false, answers.sudo, 'save-dev');
+  console.log(chalk.gray("Installing 'grunt' locally..."));
+  installPackage('grunt', false, answers.sudo, 'save-dev');
+}
+
+/**
+ * @function
+ * @name configureGrunt
+ * @description
+ *  Configure grunt templates
+ *
+ * @param {String} runner - Selected task-runner
+ * @param {String} docs - Selected documentation generator
+ * @param {String} ghpages - Selected gh-pages script
+ */
+function configureGrunt(docs, ghpages) {
+  console.log(chalk.gray("Compiling the grunt template file..."));
+
+  let templateFilePath = `${config.path.templates}/grunt`;
+  
+  let gruntfileName = 'Gruntfile.js';
+  let gruntfileFiles = [
+    `"${templateFilePath}/Gruntfile_header.js"`,
+    `"${templateFilePath}/Gruntfile_${ghpages}.js"`,
+    `"${templateFilePath}/Gruntfile_${docs}.js"`,
+    `"${templateFilePath}/Gruntfile_middle.js"`,
+    `"${templateFilePath}/Gruntfile_${ghpages}_npm.js"`,
+    `"${templateFilePath}/Gruntfile_${docs}_npm.js"`,
+    `"${templateFilePath}/Gruntfile_footer.js"`
+  ];
+
+  let gruntfileExists = fs.readdirSync('./').some((file, index, array) => {
+    return file.toLowerCase() == gruntfileName.toLowerCase();
+  });
+
+  if (gruntfileExists === true) {
+    console.log(chalk.yellow("Gruntfile.js already exists. Creating a temporary file instead..."));
+    gruntfileName = `${gruntfileName}.tmp`;
   }
+
+  execSync(`cat ${gruntfileFiles.join(' ')} > ${gruntfileName}`);
+}
+
+/**
+ * @function
+ * @name installGulp
+ * @description
+ *  Install gulp as the task-runner
+ *
+ * @param {Object} answers - Answer values from the setup questions
+ */
+function installGulp(answers) {
+  console.log(chalk.gray("Installing 'gulp'..."));
+  installPackage('gulp', false, answers.sudo, 'save-dev');
+}
+
+/**
+ * @function
+ * @name configureGulp
+ * @description
+ *  Configure gulp templates
+ *
+ * @param {String} runner - Selected task-runner
+ * @param {String} docs - Selected documentation generator
+ * @param {String} ghpages - Selected gh-pages script
+ */
+function configureGulp(docs, ghpages) {
+  console.log(chalk.gray("Compiling the gulp template files..."));
+
+  let templateFilePath = `${config.path.templates}/gulp`;
+  
+  // gulp.config.js set up
+  let gulpconfigName = 'gulp.config.js';
+  let gulpconfigFiles = [
+    `"${templateFilePath}/gulp.config_header.js"`,
+    `"${templateFilePath}/gulp.config_${ghpages}.js"`,
+    `"${templateFilePath}/gulp.config_${docs}.js"`,
+    `"${templateFilePath}/gulp.config_footer.js"`
+  ];
+
+  let gulpconfigExists = fs.readdirSync('./').some((file, index, array) => {
+    return file.toLowerCase() == gulpconfigName.toLowerCase();
+  });
+
+  if (gulpconfigExists === true) {
+    console.log(chalk.yellow("gulp.config.js already exists. Creating a temporary file instead..."));
+    gulpconfigName = `${gulpconfigName}.tmp`;
+  }
+
+  execSync(`cat ${gulpconfigFiles.join(' ')} > ${gulpconfigName}`);
+
+  // gulpfile.js set up
+  let gulpfileName = 'gulpfile.js';
+  let gulpfileFiles = [
+    `"${templateFilePath}/gulpfile_header.js"`,
+    `"${templateFilePath}/gulpfile_${ghpages}.js"`,
+    `"${templateFilePath}/gulpfile_${docs}.js"`,
+    `"${templateFilePath}/gulpfile_footer.js"`
+  ];
+
+  let gulpfileExists = fs.readdirSync('./').some((file, index, array) => {
+    return file.toLowerCase() == gulpfileName.toLowerCase();
+  });
+
+  if (gulpfileExists === true) {
+    console.log(chalk.yellow("gulpfile.js already exists. Creating a temporary file instead..."));
+    gulpfileName = `${gulpfileName}.tmp`;
+  }
+
+  execSync(`cat ${gulpfileFiles.join(' ')} > ${gulpfileName}`);
 }
 
 /**
@@ -277,42 +419,30 @@ function gulp(answers) {
  * @returns {Promise} Promise object that is resolved after Inquirer
  *                    and custom script creation completes
  */
-function configureGitAlias(runner, docs, ghpages) {
-  return new Promise((resolve, reject) => {
-    // Ask the user the name the custom git script
-    inquirer.prompt([
-        {
-          "type": "input",
-          "name": "command_name",
-          "message": "Name of custom Git command",
-          "default": "pushdoc",
-          "validate": function(value) {
-            var pass = value.match(/^[A-Z]{1}([A-Z0-9-]+)?$/i);
-            if (pass) {
-              return true;
-            } else {
-              return "Please enter a valid command name";
-            }
-          }
-        }
-      ], (answers) => {
-      // Create the custom git script
-      let gitFilePath = `/usr/local/bin/git-${answers.command_name}`;
-      let stream = fs.createWriteStream(gitFilePath);
-      
-      stream.once('open', function(fd) {
-        stream.write("#!/bin/sh\n\n");
-        stream.write("shift")
-        stream.write("git push \"$@\"\n");
-        stream.write(`test $? -eq 0 &amp;&amp; ${runner} ${docs} &amp;&amp; ${runner} ${ghpages}`)
-        stream.end();
-      });
+function configureGitAlias(answers, ghpages) {
+  try {
+    console.log(chalk.gray('Verifying git has been initialized...'));
+    execSync(`git status ${squelch}`);
+  } catch (e) {
+    console.log(chalk.yellow('Git has not been initialized'));
+    console.log(chalk.gray('Initializing git...'));
+    execSync(`git init ${squelch}`);
+  }
 
-      // Make the script executable
-      fs.chmodSync(gitFilePath, "0755");
-      resolve();
-    });
+  // Create the custom git script
+  let gitFilePath = `./git-${answers.command_name}`;
+  let stream = fs.createWriteStream(gitFilePath);
+  
+  stream.once('open', function(fd) {
+    stream.write("#!/bin/sh\n\n");
+    stream.write("git push \"$@\"\n");
+    stream.write(`test $? -eq 0 &amp;&amp; ${answers.runner} ${answers.docs} &amp;&amp; ${answers.runner} ${ghpages}`)
+    stream.end();
   });
+
+  // Make the script executable
+  fs.chmodSync(gitFilePath, "0755");
+  execSync(`git config --local --add alias.${answers.command_name} '!sh -c "./git-${answers.command_name}"'`);
 }</code></pre>
         </article>
     </section>
@@ -323,13 +453,13 @@ function configureGitAlias(runner, docs, ghpages) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#checkInstall">checkInstall</a></li><li><a href="global.html#configureGitAlias">configureGitAlias</a></li><li><a href="global.html#grunt">grunt</a></li><li><a href="global.html#gulp">gulp</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#installPackage">installPackage</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#checkInstall">checkInstall</a></li><li><a href="global.html#configureDocumentation">configureDocumentation</a></li><li><a href="global.html#configureGitAlias">configureGitAlias</a></li><li><a href="global.html#configureGrunt">configureGrunt</a></li><li><a href="global.html#configureGulp">configureGulp</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#installGrunt">installGrunt</a></li><li><a href="global.html#installGulp">installGulp</a></li><li><a href="global.html#installPackage">installPackage</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Feb 16 2016 07:29:14 GMT-0600 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Feb 24 2016 08:48:22 GMT-0600 (CST)
 </footer>
 
 <script> prettyPrint(); </script>
