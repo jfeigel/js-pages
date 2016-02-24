@@ -4,8 +4,7 @@
   "description": "Custom Git script to compile JSDoc / ngdoc and deploy to gh-pages",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "postinstall": "node app.js"
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
