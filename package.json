@@ -1,6 +1,6 @@
 {
   "name": "js-pages",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Custom Git script to compile JSDoc / ngdoc and deploy to gh-pages",
   "main": "app.js",
   "scripts": {
