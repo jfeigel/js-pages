@@ -1,6 +1,6 @@
 {
   "name": "js-pages",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Custom Git script to compile JSDoc / ngdoc and deploy to gh-pages",
   "main": "app.js",
   "scripts": {
@@ -31,6 +31,6 @@
     "grunt": "^0.4.5",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-gh-pages": "^1.0.0",
-    "grunt-jsdoc": "^1.1.0"
+    "grunt-jsdoc": "^2.0.0"
   }
 }
